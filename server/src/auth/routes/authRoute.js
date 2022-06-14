@@ -1,10 +1,11 @@
 const express = require("express");
+const passwordResetRoute = require("./passwordResetRoute.js");
 const {
   handleRegister,
   handleLogin,
   handleCheckUnique,
   handleAuthorize,
-} = require("./authHandlers.js");
+} = require("../authHandlers.js");
 const router = express.Router();
 
 // auth routes
@@ -19,6 +20,9 @@ router.post("/login", handleLogin);
 router.post("/check-unique", handleCheckUnique);
 
 // authorization
-router.post("/authorize", handleAuthorize);
+router.get("/authorize", handleAuthorize);
+
+// password reset route
+router.use("/password-reset", passwordResetRoute);
 
 module.exports = router;

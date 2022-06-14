@@ -47,14 +47,17 @@ async function handleLogin(req, res, next) {
 
     // get user and check if user exists
     let user = await getUser({ username });
-    console.log(user);
     if (user === null) {
       res.status(404); // not found
       throw new Error("user not found");
     }
     // verify password
     await verifyPassword(password, user.passwordHash);
-    const userDetails = { username: user.username, email: user.email };
+    const userDetails = {
+      username: user.username,
+      email: user.email,
+      id: user._id,
+    };
     // create token and send back
     userDetails.token = createAuthToken(userDetails);
     // response
@@ -81,7 +84,7 @@ async function handleCheckUnique(req, res, next) {
     // error if user exists
     const user = await getUser({ [field]: value });
     if (user !== null) {
-      res.statusCode(409); // conflict
+      res.status(409); // conflict
       throw new Error(`${field} ${value} already exists`);
     }
     // unique: true if user does not exist

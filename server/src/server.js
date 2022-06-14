@@ -4,7 +4,7 @@ const volleyball = require("volleyball");
 const cors = require("cors");
 const { NotFoundHandler, ErrorHandler } = require("./errorHandlers.js");
 const dbConnect = require("./db/connection.js");
-const authRoute = require("./auth/authRoute.js");
+const authRoute = require("./auth/routes/authRoute.js");
 
 // connect to mongo db
 dbConnect();
