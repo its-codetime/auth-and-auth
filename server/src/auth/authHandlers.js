@@ -5,6 +5,8 @@ const {
   createAuthToken,
   getUser,
   verifyPassword,
+  validateField,
+  verifyToken,
 } = require("./utils");
 
 async function handleRegister(req, res, next) {
@@ -47,7 +49,7 @@ async function handleLogin(req, res, next) {
     let user = await getUser({ username });
     console.log(user);
     if (user === null) {
-      res.status(404);
+      res.status(404); // not found
       throw new Error("user not found");
     }
     // verify password
@@ -65,4 +67,63 @@ async function handleLogin(req, res, next) {
   }
 }
 
-module.exports = { handleRegister, handleLogin };
+async function handleCheckUnique(req, res, next) {
+  // check unique for both username and email
+  try {
+    const { field, value } = req.body;
+    if (!field || !value) {
+      // bad request
+      res.status(400); // bad request
+      throw new Error("Both field and value are required");
+    }
+    // validate field
+    validateField(field, value);
+    // error if user exists
+    const user = await getUser({ [field]: value });
+    if (user !== null) {
+      res.statusCode(409); // conflict
+      throw new Error(`${field} ${value} already exists`);
+    }
+    // unique: true if user does not exist
+    // response
+    res.json({ unique: true, message: `${field} is valid` });
+  } catch (error) {
+    if (error.statusCode) res.status(error.statusCode);
+    next(error);
+  }
+}
+
+async function handleAuthorize(req, res, next) {
+  try {
+    // get token from authorization header
+    const authHeader = req.get("Authorization");
+    if (!authHeader) throw new Error("unauthorized");
+    const headerArr = authHeader.split(" ");
+    const token = headerArr[headerArr.length - 1];
+    // verify token
+    // error if verification is failed
+    const user = verifyToken(token);
+    const { username, email } = user;
+    const pathArray = req.originalUrl.split("/");
+    const route = pathArray[pathArray.length - 1];
+    // respond if authorize route
+    if (route === "authorize") {
+      res.json({ username, email, token });
+      return;
+    }
+    // if not authorize route, then authorize is used as middleware
+    // so attach user to req and call next
+    req.user = { username, email };
+    next();
+  } catch (error) {
+    res.status(401); // unauthorized
+    next(error);
+  }
+}
+
+module.exports = {
+  handleRegister,
+  handleLogin,
+  handleCheckUnique,
+  handleAuthorize,
+};

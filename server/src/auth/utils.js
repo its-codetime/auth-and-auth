@@ -8,7 +8,6 @@ async function checkIfUserExists(username, email) {
       $or: [{ username: username }, { email: email }],
     });
     if (user !== null) throw new Error("User already exists");
-    return user !== null;
   } catch (error) {
     error.statusCode = 400;
     throw error;
@@ -64,6 +63,40 @@ async function verifyPassword(password, hash) {
   }
 }
 
+function verifyToken(token) {
+  try {
+    var decoded = jwt.verify(token, process.env.SECRET);
+    return decoded;
+  } catch (error) {
+    throw new Error("unauthorized");
+  }
+}
+
+function validateField(field, value) {
+  try {
+    switch (field) {
+      case "username": {
+        if (value.length < 4 || value.length > 20) {
+          throw new Error(
+            "username length should be between 4 and 20 characters"
+          );
+        }
+        break;
+      }
+      case "email": {
+        const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+        if (!emailRegex.test(value)) throw new Error("invalid email");
+        break;
+      }
+      default:
+        break;
+    }
+  } catch (error) {
+    error.statusCode = 400;
+    throw error;
+  }
+}
+
 module.exports = {
   checkIfUserExists,
   hashPassword,
@@ -71,4 +104,6 @@ module.exports = {
   createAuthToken,
   getUser,
   verifyPassword,
+  validateField,
+  verifyToken,
 };
