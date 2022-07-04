@@ -45,7 +45,7 @@
     - bcrypt (to hash and verify password)
     - jsonwebtoken (to create and verify auth tokens)
     - nanoid (to create unique tokens for password reset)
-    - nodemailer (to send password reset mails)
+    - nodemailer (to send password reset mails - uses sendinblue smtp server)
     - dotenv (to load .env variables)
 
 ## client
