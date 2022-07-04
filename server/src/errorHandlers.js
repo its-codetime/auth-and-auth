@@ -6,7 +6,7 @@ const NotFoundHandler = (req, res, next) => {
 
 const ErrorHandler = (error, req, res, next) => {
   // set status code to 500 if it is not set as it is server error
-  res.status(res.statusCode===200 ? 500 : res.statusCode);
+  if (res.statusCode === 200 || !res.statusCode) res.status(500);
   res.json({ error: error.message });
 };
 
